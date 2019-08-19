@@ -53,3 +53,7 @@ ChordNote/venv/Scripts/winsound.pyd
 ChordNote/venv/Scripts/_testmultiphase.pyd
 ChordNote/venv/Scripts/_testimportmultiple.pyd
 ChordNote/venv/Scripts/_testconsole.pyd
+*.jpg
+*.pyc
+*.po
+*.mo
