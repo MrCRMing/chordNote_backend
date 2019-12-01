@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/2.0/ref/settings/
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+import socket
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
@@ -130,3 +132,10 @@ EMAIL_HOST_USER = '2036710698@qq.com'  # 发送邮件的邮箱地址
 EMAIL_HOST_PASSWORD = 'mxtlxptoquksbfbj'  # 发送邮件的邮箱密码(这里使用的是授权码)
 # 默认邮件
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+HOST = socket.gethostbyname(socket.getfqdn(socket.gethostname(  )))
+PORT = '8000'
