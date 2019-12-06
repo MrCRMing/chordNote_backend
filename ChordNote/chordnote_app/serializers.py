@@ -5,7 +5,7 @@ from ChordNote import settings
 class UserInformationSerializers(serializers.Serializer):
     email = serializers.CharField()
     nickname = serializers.CharField()
-    sex = serializers.IntegerField()
+    gender = serializers.IntegerField()
     birth_date = serializers.CharField()
     description = serializers.CharField()
     # For Image

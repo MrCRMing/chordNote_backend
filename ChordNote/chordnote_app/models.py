@@ -2,43 +2,32 @@ from django.db import models
 import datetime, os
 
 
-def get_image_path(instance, filename):
-    date = datetime.datetime.now().strftime("%Y-%m-%d")
-    year, month, day = date.split("-")
+def get_user_image_path(instance, filename):
     return os.path.join("user_image", instance.email, filename)
 
 
-def get_file_main_path(instance, filename):
-    return os.path.join("book", str(instance.book.name),str(instance.book.version),instance.name, 'main',filename)
+def get_image_path(instance, filename):
+    date = datetime.datetime.now().strftime("%Y-%m-%d")
+    year, month, day = date.split("-")
+    return os.path.join("image", year, month, day, filename)
 
 
-def get_file_exercises_path(instance, filename):
-    return os.path.join("book", str(instance.book.name), str(instance.book.version), instance.name, 'exercises', filename)
+def get_musci_file_path(instance, filename):
+    date = datetime.datetime.now().strftime("%Y-%m-%d")
+    year, month, day = date.split("-")
+    return os.path.join("music", year, month, day, filename)
 
-
-def get_file_answer_path(instance, filename):
-    return os.path.join("book", str(instance.book.name), str(instance.book.version), instance.name, 'answer', filename)
 
 
 def get_profile_photo_path(instance, filename):
-    return os.path.join("book", str(instance.name),str(instance.version), filename)
+    return os.path.join("book", str(instance.name), filename)
 
 
-class Users(models.Model):
-    class Meta:
-        db_table = "users"
-
-    email = models.CharField(max_length=30, primary_key=True)
-    name = models.CharField(max_length=20)
-    password = models.CharField(max_length=20)
-
-    # 指定外键
-
-    def __str__(self):
-        return "%s-%s-%s" % (self.email, self.name, self.password)
+def get_content_file_path(instance, filename):
+    return os.path.join("content_file", str(instance.name), filename)
 
 
-class checkcode(models.Model):
+class Checkcode(models.Model):
     class Meta:
         db_table = "checkcode"
 
@@ -48,46 +37,111 @@ class checkcode(models.Model):
     update_time = models.DateTimeField(auto_now=True, null=True)
 
 
-class Users(models.Model):
+class User(models.Model):
     class Meta:
-        db_table = "users"
+        db_table = "user"
 
     email = models.CharField(max_length=32, primary_key=True)
     nickname = models.CharField(max_length=32, null=True)
     password = models.CharField(max_length=32, null=False)
-    sex = models.IntegerField(null=True)
+    gender = models.IntegerField(null=True)
     birth_date = models.CharField(max_length=16, null=True)
-    description = models.CharField(max_length=64,null=True)
+    description = models.CharField(max_length=64, null=True)
     # For Image
-    image = models.ImageField(upload_to=get_image_path, null=True)
-
-    def __str__(self):
-        return "%s-%s-%s-%s-%s-%s" % (self.email, self.name, self.password, self.university, self.major, self.grade)
+    image = models.ImageField(upload_to=get_user_image_path, null=True)
 
 
 class Book(models.Model):
     class Meta:
         db_table = "book"
-        unique_together = ("name", "version")  # 这是重点
 
-    name = models.CharField(max_length=128,null=False)
-    version = models.IntegerField(null=False)
-    description = models.CharField(max_length=128,null=True)
+    name = models.CharField(max_length=128, null=False)
+    description = models.CharField(max_length=500, null=True)
     profile_photo = models.ImageField(upload_to=get_profile_photo_path, null=True)
-
 
 
 class Chapter(models.Model):
     class Meta:
         db_table = "chapter"
-        unique_together = ("name","book")  # 这是重点
+        unique_together = ("name", "book")  # 这是重点
 
-    name = models.CharField(max_length=128,null=False)
-    #version = models.IntegerField(null=False)
-    description = models.CharField(max_length=128,null=True)
+    name = models.CharField(max_length=128, null=False)
+    description = models.CharField(max_length=128, null=True)
 
-    file_main = models.FileField(upload_to=get_file_main_path,null=True)
-    file_exercises = models.FileField(upload_to=get_file_exercises_path,null=True)
-    file_answer = models.FileField(upload_to=get_file_answer_path,null=True)
-    book = models.ForeignKey("Book", on_delete=models.CASCADE,null=True)
+    book = models.ForeignKey("Book", on_delete=models.CASCADE, null=True)
 
+
+class Period(models.Model):
+    class Meta:
+        db_table = "period"
+
+    name = models.CharField(max_length=128, null=False)
+    content_file = models.FileField(upload_to=get_content_file_path, null=True)
+
+    chapter = models.ForeignKey("Chapter", on_delete=models.CASCADE, null=True)
+
+
+class Question(models.Model):
+    class Meta:
+        db_table = "question"
+
+    stem = models.CharField(max_length=500, null=False)  # 题干
+
+    period = models.ForeignKey("Period", on_delete=models.CASCADE, null=True)
+
+
+class Option(models.Model):
+    class Meta:
+        db_table = "option"
+
+    content = models.CharField(max_length=200, null=False)  # 题干
+    is_right = models.BooleanField(default=False)
+
+    question = models.ForeignKey("Question", on_delete=models.CASCADE, null=True)
+
+
+class Image(models.Model):
+    class Meta:
+        db_table = "image"
+
+    url = models.TextField(null=True)
+    image = models.ImageField(upload_to=get_image_path)
+    create_time = models.DateTimeField(auto_now_add=True, null=True)
+    update_time = models.DateTimeField(auto_now=True, null=True)
+
+    # 建立外键
+    question = models.ForeignKey("Question", on_delete=models.CASCADE, null=True)
+    moment = models.ForeignKey("Moment", on_delete=models.CASCADE, null=True)
+
+
+class Moment(models.Model):
+    class Meta:
+        db_table = "moment"
+
+    title = models.CharField(max_length=50, null=False)
+    content = models.CharField(max_length=500, null=False)
+    like_num = models.IntegerField(default=0)
+    publish_time = models.DateTimeField(auto_now_add=True, null=False)
+    music_file = models.FileField(upload_to=get_musci_file_path, null=True)
+
+    user = models.ForeignKey("User", on_delete=models.CASCADE, null=True)
+
+
+class Comment(models.Model):
+    class Meta:
+        db_table = "comment"
+
+    content = models.CharField(max_length=500, null=False)
+    like_num = models.IntegerField(default=0)
+    publish_time = models.DateTimeField(auto_now_add=True, null=False)
+
+    user = models.ForeignKey("User", on_delete=models.CASCADE, null=True)
+
+
+class User_collect_Comment(models.Model):
+    # 用于记载动态和动态收藏者的关联信息
+    class Meta:
+        db_table = "user_collect_comment"
+
+    user = models.ForeignKey("User", on_delete=models.CASCADE, null=True)
+    comment = models.ForeignKey("Comment", on_delete=models.CASCADE, null=True)
