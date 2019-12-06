@@ -78,10 +78,10 @@ class RegisterView(APIView):
             # 为用户登录创建验证码
             checkcode = md5(email)[:5]
             # 将验证码保存在数据库中(这里原本是保存在session中，但因为前端一直调用失败，暂时改为保存在数据库表中）
-            checkcode_obj = models.checkcode.objects.filter(email=email).first()
+            checkcode_obj = models.Checkcode.objects.filter(email=email).first()
             # 若未有相关记录则创建，若已有相关记录则更新
             if not checkcode_obj:
-                new_checkcode = models.checkcode()
+                new_checkcode = models.Checkcode()
                 new_checkcode.email = email
                 new_checkcode.code = checkcode
                 new_checkcode.save()
@@ -116,13 +116,13 @@ class RegisterView(APIView):
             time_early = time_now - interval
             time_now = time_now - datetime.timedelta(hours=8)
 
-            checkcode_obj = models.checkcode.objects.filter(email=email).first()
+            checkcode_obj = models.Checkcode.objects.filter(email=email).first()
             if not checkcode_obj:
                 ret["code"] = 1003
                 ret["msg"] = "该邮箱未申请过验证码"
                 return Response(ret, status.HTTP_200_OK)
             else:
-                new_checkcode_obj = models.checkcode.objects.filter(email=email,
+                new_checkcode_obj = models.Checkcode.objects.filter(email=email,
                                                                     update_time__range=(time_early, time_now)).first()
 
                 if not new_checkcode_obj:
@@ -132,13 +132,13 @@ class RegisterView(APIView):
                 else:
                     correct_checkcode = new_checkcode_obj.code
                     if correct_checkcode == checkcode:
-                        db_search = models.Users.objects.filter(email=email).first()
+                        db_search = models.User.objects.filter(email=email).first()
                         if db_search == None:
-                            temp = models.Users()
+                            temp = models.User()
                             temp.email = email
                             temp.password = user_password
                             temp.nickname = name
-                            temp.sex = request.data.get("sex", None)
+                            temp.gender = request.data.get("gender", None)
                             temp.description = request.data.get("description", None)
                             temp.birth_date = request.data.get("birth_date", None)
                             temp.save()
@@ -159,7 +159,7 @@ class RegisterView(APIView):
 class UserInformationView(APIView):
     def put(self, request, *args, **kwargs):  # modify user information,
         email = request.data.get("email", None)
-        obj = models.Users.objects.filter(email=email).first()
+        obj = models.User.objects.filter(email=email).first()
         if not obj:
             res = {
                 'code':1001,
@@ -168,7 +168,7 @@ class UserInformationView(APIView):
             return Response(res, status.HTTP_200_OK)
         else:
             obj.nickname = request.data.get("nickname",obj.nickname)
-            obj.sex = request.data.get("sex", obj.sex)
+            obj.gender = request.data.get("gender", obj.gender)
             obj.birth_date = request.data.get("birth_date", obj.birth_date)
             obj.description = request.data.get("description", obj.description)
             image = request.FILES['image']
@@ -184,7 +184,7 @@ class UserInformationView(APIView):
 
     def get(self, request, *args, **kwargs):  # get user information,
         email = request.GET.get("email",None)
-        obj = models.Users.objects.filter(email=email).first()
+        obj = models.User.objects.filter(email=email).first()
         if not obj:
             res = {
                 'code': 1001,
