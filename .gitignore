@@ -61,3 +61,6 @@ ChordNote/.idea/dataSources/10c7619b-fdc7-4e24-94d1-2dd5e7d651aa.xml
 ChordNote/.idea/dataSources.xml
 ChordNote/.idea/dataSources.local.xml
 ChordNote/.idea/dataSources/4b7be130-559c-4165-9c5f-ecfc05a41fa6.xml
+ChordNote/.idea/
+ChordNote/chordnote_app/migrations/__pycache__/0002_user_collect_moment.cpython-36.pyc
+ChordNote/media/
