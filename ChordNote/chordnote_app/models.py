@@ -1,6 +1,6 @@
 from django.db import models
 import datetime, os
-
+from ChordNote import settings
 
 def get_user_image_path(instance, filename):
     return os.path.join("user_image", instance.email, filename)
@@ -15,8 +15,8 @@ def get_image_path(instance, filename):
 def get_musci_file_path(instance, filename):
     date = datetime.datetime.now().strftime("%Y-%m-%d")
     year, month, day = date.split("-")
+    url="http://" + settings.HOST + ":" + settings.PORT + "/media/image/" + date + image_obj.image.name
     return os.path.join("music", year, month, day, filename)
-
 
 
 def get_profile_photo_path(instance, filename):
@@ -47,9 +47,7 @@ class User(models.Model):
     gender = models.IntegerField(null=True)
     birth_date = models.CharField(max_length=16, null=True)
     description = models.CharField(max_length=64, null=True)
-    # For Image
-    image = models.ImageField(upload_to=get_user_image_path, null=True)
-
+    photo_url = models.CharField(max_length=64, null=True)
 
 class Book(models.Model):
     class Meta:
@@ -114,6 +112,7 @@ class Image(models.Model):
     moment = models.ForeignKey("Moment", on_delete=models.CASCADE, null=True)
 
 
+
 class Moment(models.Model):
     class Meta:
         db_table = "moment"
@@ -139,9 +138,17 @@ class Comment(models.Model):
 
 
 class User_collect_Comment(models.Model):
-    # 用于记载动态和动态收藏者的关联信息
+    # 用于记载评论和评论收藏者的关联信息
     class Meta:
         db_table = "user_collect_comment"
 
     user = models.ForeignKey("User", on_delete=models.CASCADE, null=True)
     comment = models.ForeignKey("Comment", on_delete=models.CASCADE, null=True)
+
+class User_collect_Moment(models.Model):
+    # 用于记载评论和评论收藏者的关联信息
+    class Meta:
+        db_table = "user_collect_moment"
+
+    user = models.ForeignKey("User", on_delete=models.CASCADE, null=True)
+    moment = models.ForeignKey("Moment", on_delete=models.CASCADE, null=True)

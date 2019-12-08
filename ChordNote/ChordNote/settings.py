@@ -130,6 +130,8 @@ EMAIL_HOST = 'smtp.qq.com'  # 发送邮件的邮箱 的 SMTP服务器，这里�
 EMAIL_PORT = 465  # 发件箱的SMTP服务器端口
 EMAIL_HOST_USER = '2036710698@qq.com'  # 发送邮件的邮箱地址
 EMAIL_HOST_PASSWORD = 'mxtlxptoquksbfbj'  # 发送邮件的邮箱密码(这里使用的是授权码)
+#默认头像url
+DEFAULT_PHOTO_URL='http://127.0.0.1:8000/media/image/default_user.jpg'
 # 默认邮件
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
@@ -137,5 +139,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-HOST = socket.gethostbyname(socket.getfqdn(socket.gethostname(  )))
+#HOST = socket.gethostbyname(socket.getfqdn(socket.gethostname(  )))
+HOST='127.0.0.1'
 PORT = '8000'
