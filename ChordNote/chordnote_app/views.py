@@ -257,113 +257,158 @@ class UserInformationView(APIView):
 
 
 class BookView(APIView):
-    def post(self, request, *args, **kwargs):  # create,
-        # method = request.data.get("method",None)
-        # if method == 'create':
-        name = request.data.get("name", None)
-        version = request.data.get("version", None)
-        temp = models.Book.objects.filter(name=name, version=version).first()
-        if not temp:
-            description = request.data.get("description", None)
-            book = models.Book()
-            book.name = name
-            book.version = version
-            book.description = description
-            book.profile_photo = request.FILES['profile_photo']
-            book.save()
-            ret = {
-                "code": 1000,
-                "msg": "Create successfully",
-                "book_id": book.id
-            }
-            return Response(ret, status.HTTP_200_OK)
-        else:
-            ret = {
-                "code": 1001,
-                "msg": "This version of the book already exists.",
-                "book_id": temp.id
+    # def post(self, request, *args, **kwargs):  # create,
+    #     # method = request.data.get("method",None)
+    #     # if method == 'create':
+    #     name = request.data.get("name", None)
+    #     version = request.data.get("version", None)
+    #     temp = models.Book.objects.filter(name=name, version=version).first()
+    #     if not temp:
+    #         description = request.data.get("description", None)
+    #         book = models.Book()
+    #         book.name = name
+    #         book.version = version
+    #         book.description = description
+    #         book.profile_photo = request.FILES['profile_photo']
+    #         book.save()
+    #         ret = {
+    #             "code": 1000,
+    #             "msg": "Create successfully",
+    #             "book_id": book.id
+    #         }
+    #         return Response(ret, status.HTTP_200_OK)
+    #     else:
+    #         ret = {
+    #             "code": 1001,
+    #             "msg": "This version of the book already exists.",
+    #             "book_id": temp.id
+    #
+    #         }
+    #         return Response(ret, status.HTTP_200_OK)
 
-            }
-            return Response(ret, status.HTTP_200_OK)
-
+    # def get(self, request, *args, **kwargs):
+    #     book_id = request.GET.get("book_id", None)
+    #     book = models.Book.objects.filter(pk=book_id).first()
+    #     if not book:
+    #         ret = {
+    #             "code": 1001,
+    #             "msg": "The book does not exist"
+    #         }
+    #         return Response(ret, status.HTTP_200_OK)
+    #     else:
+    #         ser = serializers.BookSerializers(instance=book, many=False)
+    #         ret = {
+    #             "code": 1000,
+    #             "msg": "Successful access",
+    #             "book": ser.data
+    #         }
+    #         return Response(ret, status.HTTP_200_OK)
     def get(self, request, *args, **kwargs):
-        book_id = request.GET.get("book_id", None)
-        book = models.Book.objects.filter(pk=book_id).first()
-        if not book:
-            ret = {
-                "code": 1001,
-                "msg": "The book does not exist"
-            }
-            return Response(ret, status.HTTP_200_OK)
-        else:
-            ser = serializers.BookSerializers(instance=book, many=False)
+        try:
             ret = {
                 "code": 1000,
-                "msg": "Successful access",
-                "book": ser.data
+                "msg": "成功获取",
             }
+            books = models.Book.objects.all()
+            ser = serializers.BookSerializers(instance=books, many=True)
+            ret['book_list'] = ser.data
             return Response(ret, status.HTTP_200_OK)
-
-
-class ChapterView(APIView):
-    def post(self, request, *args, **kwargs):  # create,
-        book_id = request.data.get("book_id", None)
-        book = models.Book.objects.filter(pk=book_id).first()
-        if not book:
+        except:
             ret = {
                 "code": 1001,
-                "msg": "The book does not exist",
-                "book_id": book_id
+                "msg": "未知错误，操作失败",
+
             }
             return Response(ret, status.HTTP_200_OK)
-        else:
-            name = request.data.get("name", None)
-            # version = request.data.get("version", None)
-            temp = models.Chapter.objects.filter(name=name, book_id=book_id).first()
-            if not temp:
-                chapter = models.Chapter()
-                chapter.name = name
-                # chapter.version = version
-                chapter.description = request.data.get("description", None)
-                chapter.file_exercises = request.FILES['file_exercises']
-                chapter.file_answer = request.FILES['file_answer']
-                chapter.file_main = request.FILES['file_main']
-                chapter.book = book
-                chapter.save()
-                ret = {
-                    "code": 1000,
-                    "msg": "Create successfully",
-                    "chapter_id": chapter.id
-                }
-                return Response(ret, status.HTTP_200_OK)
-            else:
+
+
+class Chapter_Info_View(APIView):
+    def get(self, request, *args, **kwargs):  # create,
+        try:
+            book_id = request.GET.get("id", None)
+            # 判断book是否存在
+            book = models.Book.objects.filter(id=book_id)
+            if not book:
                 ret = {
                     "code": 1001,
-                    "msg": "The chapter already exists.",
-                    "chapter_id": temp.id
-
+                    "msg": "该Book不存在",
                 }
                 return Response(ret, status.HTTP_200_OK)
-
-    def get(self, request, *args, **kwargs):
-        chapter_id = request.GET.get("chapter_id", None)
-        chapter = models.Chapter.objects.filter(id=chapter_id).first()
-        if not chapter:
-            ret = {
-                "code": 1001,
-                "msg": "The chapter does not exist.",
-                "chapter_id": chapter_id
-
-            }
-            return Response(ret, status.HTTP_200_OK)
-        else:
-            ser = serializers.ChapterSerializers(instance=chapter, many=False)
+            chapters = models.Chapter.objects.filter(book_id=book_id)
+            ser = serializers.ChapterSerializers(instance=chapters, many=True)
             ret = {
                 "code": 1000,
-                "msg": "Access successfully",
-                "chapter": ser.data
+                "msg": "获取成功",
+                "chapter_list": ser.data
             }
             return Response(ret, status.HTTP_200_OK)
+        except:
+            ret = {
+                "code": 1001,
+                "msg": "未知错误，操作失败",
+            }
+            return Response(ret, status.HTTP_200_OK)
+
+
+# class ChapterView(APIView):
+#     def post(self, request, *args, **kwargs):  # create,
+#         book_id = request.data.get("book_id", None)
+#         book = models.Book.objects.filter(pk=book_id).first()
+#         if not book:
+#             ret = {
+#                 "code": 1001,
+#                 "msg": "The book does not exist",
+#                 "book_id": book_id
+#             }
+#             return Response(ret, status.HTTP_200_OK)
+#         else:
+#             name = request.data.get("name", None)
+#             # version = request.data.get("version", None)
+#             temp = models.Chapter.objects.filter(name=name, book_id=book_id).first()
+#             if not temp:
+#                 chapter = models.Chapter()
+#                 chapter.name = name
+#                 # chapter.version = version
+#                 chapter.description = request.data.get("description", None)
+#                 chapter.file_exercises = request.FILES['file_exercises']
+#                 chapter.file_answer = request.FILES['file_answer']
+#                 chapter.file_main = request.FILES['file_main']
+#                 chapter.book = book
+#                 chapter.save()
+#                 ret = {
+#                     "code": 1000,
+#                     "msg": "Create successfully",
+#                     "chapter_id": chapter.id
+#                 }
+#                 return Response(ret, status.HTTP_200_OK)
+#             else:
+#                 ret = {
+#                     "code": 1001,
+#                     "msg": "The chapter already exists.",
+#                     "chapter_id": temp.id
+#
+#                 }
+#                 return Response(ret, status.HTTP_200_OK)
+#
+#     def get(self, request, *args, **kwargs):
+#         chapter_id = request.GET.get("chapter_id", None)
+#         chapter = models.Chapter.objects.filter(id=chapter_id).first()
+#         if not chapter:
+#             ret = {
+#                 "code": 1001,
+#                 "msg": "The chapter does not exist.",
+#                 "chapter_id": chapter_id
+#
+#             }
+#             return Response(ret, status.HTTP_200_OK)
+#         else:
+#             ser = serializers.ChapterSerializers(instance=chapter, many=False)
+#             ret = {
+#                 "code": 1000,
+#                 "msg": "Access successfully",
+#                 "chapter": ser.data
+#             }
+#             return Response(ret, status.HTTP_200_OK)
 
 
 from rest_framework.pagination import CursorPagination
@@ -474,8 +519,8 @@ class MomentView(APIView):
         }
         try:
             moment_id = request.data.get("moment_id", None)
-            moment_obj=models.Moment.objects.filter(id=moment_id).first()
-            if moment_obj!=None:
+            moment_obj = models.Moment.objects.filter(id=moment_id).first()
+            if moment_obj != None:
                 moment_obj.delete()
                 ret['msg'] = '删除动态成功'
                 return Response(ret, status.HTTP_200_OK)
@@ -565,24 +610,24 @@ class Moment_DetailView(APIView):
         ret = {"code": 1000, "msg": None}
         try:
             email = request.GET.get("email", None)
-            type=request.GET.get('type',None)
-            if type=="collected":
-                relationship_list=models.User_collect_Moment.objects.filter(user__email=email)
-                moment_list=[]
+            type = request.GET.get('type', None)
+            if type == "collected":
+                relationship_list = models.User_collect_Moment.objects.filter(user__email=email)
+                moment_list = []
                 for relationship_item in relationship_list:
-                    moment_id=relationship_item.moment_id
-                    moment_obj=models.Moment.objects.filter(id=moment_id).first()
+                    moment_id = relationship_item.moment_id
+                    moment_obj = models.Moment.objects.filter(id=moment_id).first()
                     moment_list.append(moment_obj)
-                ser=serializers.MomentSerializers(instance=moment_list,many=True)
+                ser = serializers.MomentSerializers(instance=moment_list, many=True)
 
                 ret["code"] = 1000
                 ret["msg"] = '获得收藏的动态成功'
-                ret["data"]=ser.data
+                ret["data"] = ser.data
 
                 return Response(ret, status.HTTP_200_OK)
-            elif type=='published':
-                user_obj=models.User.objects.filter(email=email).first()
-                moment_list=user_obj.moment_set.all()
+            elif type == 'published':
+                user_obj = models.User.objects.filter(email=email).first()
+                moment_list = user_obj.moment_set.all()
                 ser = serializers.MomentSerializers(instance=moment_list, many=True)
                 ret["code"] = 1000
                 ret["msg"] = '获得发表的动态成功'
@@ -600,6 +645,7 @@ class Moment_DetailView(APIView):
 
             }
             return Response(ret, status.HTTP_200_OK)
+
 
 class Comment_DetailView(APIView):
     # 获得某个用户收藏或发表的评论
@@ -642,3 +688,240 @@ class Comment_DetailView(APIView):
 
             }
             return Response(ret, status.HTTP_200_OK)
+
+
+class PeriodView(APIView):
+    # 获取某chapter下面的period
+    def get(self, request, *args, **kwargs):
+        try:
+            period_id = request.GET.get("id", None)
+            period = models.Period.objects.filter(id=period_id).first()
+            if not period:
+                ret = {
+                    "code": 1001,
+                    "msg": "该Period不存在",
+                }
+                return Response(ret, status.HTTP_200_OK)
+            ret = {"code": 1000, "msg": "成功获取"}
+            ret["period"] = serializers.PeriodSerializers(instance=period, many=False).data
+            return Response(ret, status.HTTP_200_OK)
+        except:
+            ret = {
+                "code": 1001,
+                "msg": "未知错误，操作失败",
+
+            }
+            return Response(ret, status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class QuestionView(APIView):
+    # 获取某period下的question
+    def get(self, request, *args, **kwargs):
+        try:
+            period_id = request.GET.get("id", None)
+            period = models.Period.objects.filter(id=period_id).first()
+            if not period:
+                ret = {
+                    "code": 1001,
+                    "msg": "该Period不存在",
+                }
+                return Response(ret, status.HTTP_200_OK)
+            questions = models.Question.objects.filter(period_id=period_id)
+            ser = serializers.QuestionSerializers(instance=questions, many=True)
+            ret = {
+                "code": 1000,
+                "msg": "查询成功",
+                "question_list": ser.data
+            }
+            return Response(ret, status.HTTP_200_OK)
+        except:
+            ret = {
+                "code": 1001,
+                "msg": "未知错误，操作失败",
+
+            }
+            return Response(ret, status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# 主要是对period相关
+class Comment_Commen_View(APIView):
+    # 获取某period下的评论
+    def get(self, request, *args, **kwargs):
+        try:
+            period_id = request.GET.get("id", None)
+            period = models.Period.objects.filter(id=period_id).first()
+            if not period:
+                ret = {
+                    "code": 1001,
+                    "msg": "该Period不存在",
+                }
+                return Response(ret, status.HTTP_200_OK)
+            ret = {"code": 1000, "msg": None}
+            comment_list = models.Comment.objects.all()
+            # 创建分页对象
+            pg = MyCursorPagination()
+            # 获取分页的数据
+            page_data = pg.paginate_queryset(queryset=comment_list, request=request, view=self)
+            # 对数据序列化
+            ser = serializers.CommentSerializers2(instance=page_data, many=True)
+
+            return Response(OrderedDict([
+                ('code', 1000),
+                ('msg', '获得评论成功'),
+                ('next', pg.get_next_link()),
+                ('previous', pg.get_previous_link()),
+                ('results', ser.data)
+            ]))
+
+        except:
+            ret = {
+                "code": 1001,
+                "msg": "未知错误，操作失败",
+
+            }
+            return Response(ret, status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    # 添加comment
+    def post(self, request, *args, **kwargs):
+        try:
+            period_id = request.data.get("id_period", None)
+            user_id = request.data.get("email", None)
+            content = request.data.get("content", None)
+
+            period = models.Period.objects.filter(id=period_id).first()
+            if not period:
+                ret = {
+                    "code": 1001,
+                    "msg": "该Period不存在",
+                }
+                return Response(ret, status.HTTP_200_OK)
+            user = models.User.objects.filter(email=user_id).first()
+            if not user:
+                ret = {
+                    "code": 1001,
+                    "msg": "该User不存在",
+                }
+                return Response(ret, status.HTTP_200_OK)
+
+            # 组装
+            comment = models.Comment()
+            comment.user = user
+            comment.content = content
+            comment.like_num = 0
+            comment.publish_time = datetime.datetime.now()
+            comment.save()
+            ret = {
+                "code": 1000,
+                "msg": "评论成功",
+            }
+            return Response(ret, status.HTTP_200_OK)
+        except:
+            ret = {
+                "code": 1001,
+                "msg": "未知错误，操作失败",
+
+            }
+            return Response(ret, status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    # 删除comment
+    def delete(self, request, *args, **kwargs):
+        try:
+            comment_id = request.data.get("id_comment", None)
+            comment = models.Comment.objects.filter(id=comment_id).first()
+            if not comment:
+                ret = {
+                    "code": 1001,
+                    "msg": "该Comment不存在",
+                }
+                return Response(ret, status.HTTP_200_OK)
+            comment.delete()
+            ret = {
+                "code": 1000,
+                "msg": "删除评论成功",
+            }
+            return Response(ret, status.HTTP_200_OK)
+        except:
+            ret = {
+                "code": 1001,
+                "msg": "未知错误，操作失败",
+
+            }
+            return Response(ret, status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# 主要是对user相关
+class Comment_Collect_View(APIView):
+    # 收藏comment
+    def post(self, request, *args, **kwargs):
+        try:
+            user_id = request.data.get("email", None)
+            comment_id = request.data.get("id_comment", None)
+
+            comment = models.Comment.objects.filter(id=comment_id).first()
+            if not comment:
+                ret = {
+                    "code": 1001,
+                    "msg": "该Comment不存在",
+                }
+                return Response(ret, status.HTTP_200_OK)
+            user = models.User.objects.filter(email=user_id).first()
+            if not user:
+                ret = {
+                    "code": 1001,
+                    "msg": "该User不存在",
+                }
+                return Response(ret, status.HTTP_200_OK)
+
+            # 检查存在性
+            search_obj = models.User_collect_Comment.objects.filter(user=user, comment=comment).first()
+            if search_obj:
+                ret = {}
+                ret['code'] = 1001
+                ret['msg'] = '该收藏已存在'
+                return Response(ret, status.HTTP_200_OK)
+
+            # 组装
+            relationship_obj = models.User_collect_Comment()
+            relationship_obj.user = user
+            relationship_obj.comment = comment
+            relationship_obj.save()
+            ret = {
+                'code': 1000,
+                'msg': '收藏评论成功'
+            }
+            return Response(ret, status.HTTP_200_OK)
+        except:
+            ret = {
+                "code": 1001,
+                "msg": "未知错误，操作失败",
+
+            }
+            return Response(ret, status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    # 取消收藏comment
+    def delete(self, request, *args, **kwargs):
+        try:
+            user_id = request.data.get("email", None)
+            comment_id = request.data.get("id_comment", None)
+
+            # 检查存在性
+            delete_obj = models.User_collect_Comment.objects.filter(user_id=user_id, comment_id=comment_id).first()
+            if not delete_obj:
+                ret = {}
+                ret['code'] = 1001
+                ret['msg'] = '该收藏不存在'
+                return Response(ret, status.HTTP_200_OK)
+
+            delete_obj.delete()
+            ret = {
+                'code': 1000,
+                'msg': '取消收藏评论成功'
+            }
+            return Response(ret, status.HTTP_200_OK)
+        except:
+            ret = {
+                "code": 1001,
+                "msg": "未知错误，操作失败",
+
+            }
+            return Response(ret, status.HTTP_500_INTERNAL_SERVER_ERROR)
