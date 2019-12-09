@@ -474,14 +474,21 @@ class MomentView(APIView):
         }
         try:
             moment_id = request.data.get("moment_id", None)
-            models.Moment.objects.filter(id=moment_id).delete()
-
-            ret['msg'] = '删除动态成功'
-            return Response(ret, status.HTTP_200_OK)
+            moment_obj=models.Moment.objects.filter(id=moment_id).first()
+            if moment_obj!=None:
+                moment_obj.delete()
+                ret['msg'] = '删除动态成功'
+                return Response(ret, status.HTTP_200_OK)
+            else:
+                ret = {
+                    'code': 1001,
+                    'msg': '动态不存在'
+                }
+                return Response(ret, status.HTTP_200_OK)
         except:
             ret = {
-                'code': 1001,
-                'msg': '删除动态失败'
+                'code': 1002,
+                'msg': '未知错误操作失败'
             }
             return Response(ret, status.HTTP_200_OK)
 
@@ -611,7 +618,7 @@ class Comment_DetailView(APIView):
                 ser = serializers.CommentSerializers(instance=comment_list, many=True)
 
                 ret["code"] = 1000
-                ret["msg"] = '获得收藏的动态成功'
+                ret["msg"] = '获得收藏的评论成功'
                 ret["data"] = ser.data
 
                 return Response(ret, status.HTTP_200_OK)

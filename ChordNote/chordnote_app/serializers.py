@@ -1,3 +1,5 @@
+import datetime
+
 from rest_framework import serializers
 
 from ChordNote import settings
@@ -64,7 +66,7 @@ class MomentSerializers(serializers.Serializer):
     title = serializers.CharField()
     content = serializers.CharField()
     like_num = serializers.IntegerField()
-    publish_time = serializers.DateTimeField()
+    publish_time = serializers.SerializerMethodField()
     email = serializers.CharField(source='user.email')
     nickname = serializers.CharField(source='user.nickname')
     image_url = serializers.CharField(source='user.photo_url')
@@ -85,12 +87,25 @@ class MomentSerializers(serializers.Serializer):
         ret = [image.url for image in image_list]
         return ret
 
+    @staticmethod
+    def get_publish_time(row):
+        publish_time = row.publish_time
+        local_datetime = publish_time
+        Local_datetime = datetime.datetime.strftime(local_datetime, '%Y-%m-%d %H:%M:%S')
+        return Local_datetime
 
 class CommentSerializers(serializers.Serializer):
     id = serializers.IntegerField()
     content = serializers.CharField()
     like_num = serializers.IntegerField()
-    publish_time = serializers.DateTimeField()
+    publish_time = serializers.SerializerMethodField()
     email = serializers.CharField(source='user.email')
     nickname = serializers.CharField(source='user.nickname')
     image_url = serializers.CharField(source='user.photo_url')
+
+    @staticmethod
+    def get_publish_time(row):
+        publish_time = row.publish_time
+        local_datetime = publish_time
+        Local_datetime = datetime.datetime.strftime(local_datetime, '%Y-%m-%d %H:%M:%S')
+        return Local_datetime
