@@ -15,7 +15,6 @@ def get_image_path(instance, filename):
 def get_musci_file_path(instance, filename):
     date = datetime.datetime.now().strftime("%Y-%m-%d")
     year, month, day = date.split("-")
-    url="http://" + settings.HOST + ":" + settings.PORT + "/media/image/" + date + image_obj.image.name
     return os.path.join("music", year, month, day, filename)
 
 
